@@ -7,24 +7,23 @@ const octokit = new Octokit({
 
 const orgName = Deno.env.get("GITHUB_ORGNAME") ?? "";
 
-const repos = await octokit.request("GET /orgs/{org}/repos", {
+const repos = await octokit.paginate("GET /orgs/{org}/repos", {
   org: orgName,
   sort: "updated",
   per_page: 100,
 });
 
 const arrData: ghResponse[] = [];
-for (const data of repos.data) {
+for (const data of repos) {
   const repoName = data.name;
 
-  const issues = await octokit.request("GET /repos/{owner}/{repo}/issues", {
+  const issues = await octokit.paginate("GET /repos/{owner}/{repo}/issues", {
     owner: orgName,
     repo: repoName,
   });
 
-  if (issues.data) {
-    const allIssues = issues.data;
-    for (const data of allIssues) {
+  if (issues) {
+    for (const data of issues) {
       const objData = {
         repo: repoName,
         title: data.title,
